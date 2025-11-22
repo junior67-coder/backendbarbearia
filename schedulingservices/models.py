@@ -48,7 +48,7 @@ class Service(models.Model):
         validators=[MinValueValidator(5)],
         help_text='Tempo médio em minutos para execução do serviço',
     )
-    velue = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0.00)], verbose_name='Valor')
+    value = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0.00)], verbose_name='Valor')
     professionals_aptos = models.ManyToManyField(Professional, related_name='services_aptos', verbose_name='Profissionais aptos')
     
     class Meta:

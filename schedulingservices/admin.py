@@ -14,9 +14,9 @@ class ProfessionalAdmin(admin.ModelAdmin):
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'barbershop', 'minutes_duration', 'velue')
-    list_filter = ('barbershop', 'minutes_duration', 'velue')
-    search_fields = ('name', 'barbershop', 'minutes_duration', 'velue')
+    list_display = ('name', 'barbershop', 'minutes_duration', 'value')
+    list_filter = ('barbershop', 'minutes_duration', 'value')
+    search_fields = ('name', 'barbershop', 'minutes_duration', 'value')
     list_per_page = 10
     
     
