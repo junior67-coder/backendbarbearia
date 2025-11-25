@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'rest_framework',
     # Nossos apps
     'authentication',
+    'schedulingservices',
     
     # Apps de terceiros
 ]

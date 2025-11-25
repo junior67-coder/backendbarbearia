@@ -1,0 +1,48 @@
+from rest_framework import viewsets, permissions
+from authentication.models import BarberShop
+from schedulingservices.models import Professional, Service
+
+from .serializers import ProfessionalSerializer, ServiceSerializer
+
+from django.shortcuts import get_object_or_404
+
+
+class MultiTenantModelViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    # 1. Filtra o Queryset para mostrar APENAS os dados do Salão do Usuário Logado
+    def get_queryset(self):
+        # Todos os modelos em servicos_agendamento têm o campo 'salao'
+        return self.queryset.filter(barbershop__owner=self.request.user)
+    
+    # 2. Injeta o Salão (tenant) no objeto ANTES de salvar (criação)
+    def perform_create(self, serializer):
+        # O Salão é obtido através do usuário logado (proprietario)
+        barbershop = get_object_or_404(BarberShop, owner=self.request.user)
+        serializer.save(barbershop=barbershop)
+        
+        
+class ProfessionalViewSet(MultiTenantModelViewSet):
+    """Permite listar, criar, atualizar e deletar Profissionais, filtrado pelo Salão logado."""
+    queryset = Professional.objects.all()
+    serializer_class = ProfessionalSerializer
+    
+    
+class ServiceViewSet(MultiTenantModelViewSet):
+    """Permite listar, criar, atualizar e deletar Serviços, filtrado pelo Salão logado."""
+    queryset = Service.objects.all()
+    serializer_class = ServiceSerializer
+    
+    # Sobrescreve perform_create para lidar com o M2M (profissionais_aptos) após salvar
+    def perform_create(self, serializer):
+        # 1. Injeta o salão e salva a instância principal
+        super().perform_create(serializer)
+        
+        # 2. Lógica para filtrar o ManyToMany (profissionais_aptos) pelo Salão
+        # Se o serializer tem dados de 'profissionais_aptos', garantimos que eles pertencem ao Salão
+        if 'profissionals_aptos' in self.request.data:
+            profissionals_ids = self.request.data['profissionals_aptos']
+            # Filtra os IDs fornecidos para garantir que pertencem ao salão atual
+            profissionals_of_barbershop = Professional.objects.filter(barbershop__owner=self.request.user, id__in=profissionals_ids)
+            serializer.instance.profissionals_aptos.set(profissionals_of_barbershop)
+            
