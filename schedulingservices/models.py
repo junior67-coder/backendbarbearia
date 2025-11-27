@@ -36,7 +36,7 @@ class Professional(models.Model):
         
         
     def __str__(self):
-        return f"{self.name} ({self.barbershop.name})"
+        return f"{self.name} - Salão: ({self.barbershop.name})"
     
 
 # Class de serviços
@@ -81,6 +81,7 @@ class Client(models.Model):
 # Class de agendamento
 class Scheduling(models.Model):
     """Registro de um agendamento específico."""
+    barbershop = models.ForeignKey(BarberShop, on_delete=models.CASCADE, related_name='schedulings_barbershop', verbose_name='Salão')
     client = models.ForeignKey(Client, on_delete=models.PROTECT, related_name='schedulings', verbose_name='Cliente')
     service = models.ForeignKey(Service, on_delete=models.PROTECT, related_name='schedulings', verbose_name='Serviço')
     professional = models.ForeignKey(Professional, on_delete=models.PROTECT, related_name='schedulings', verbose_name='Profissional')
@@ -91,17 +92,20 @@ class Scheduling(models.Model):
     
     
     def save(self, *args, **kwargs):
-        # Calcula data_hora_fim baseado na duração do Serviço
+        # Simplificando: A lógica de cálculo do valor e do fim do horário é movida para o Serializer.
+        # Mantemos apenas o super().save.
+        # No entanto, se o date_hour_end NÃO vier do serializer (ex: admin), mantemos a lógica de cálculo
+        
+        # Lógica de fim de agendamento (mantida como fallback, mas será setada pelo serializer)
         if self.service and self.date_hour_init and not self.date_hour_end:
             duration = self.service.minutes_duration
             self.date_hour_end = self.date_hour_init + timedelta(minutes=duration)
-            
-        if self.service and self.initial_value == 0.00:
-            self.initial_value = self.service.velue
-            
+
+        # Removemos a lógica de valor, pois será injetada no Serializer.
         super().save(*args, **kwargs)
         
     class Meta:        
         verbose_name = 'Agendamento'
         verbose_name_plural = "Agendamentos"
-        unique_together = ['date_hour_init']
+        #unique_together = ['date_hour_init']
+        
