@@ -3,6 +3,7 @@ from django.urls import path, include
 
 from rest_framework.routers import DefaultRouter
 from authentication.api.viewsets import BarberShopViewSet
+from intelligence.api.viewsets import RescheduleSuggestionViewSet
 from schedulingservices.api.viewsets import ClientViewSet, ProfessionalViewSet, ServiceViewSet, ShedulingViewSet
 
 from schedulingservices.public_views import PublicSchedulingAPI, PublicAvailableTimesAPI
@@ -15,6 +16,7 @@ router.register(r'servico', ServiceViewSet)
 router.register(r'profissional', ProfessionalViewSet)
 router.register(r'clientes', ClientViewSet)
 router.register(r'agendamentos', ShedulingViewSet)
+router.register(r'ai-sugestoes', RescheduleSuggestionViewSet, basename='ai-suggestions')
 
 
 urlpatterns = [
