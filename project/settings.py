@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     # Nossos apps
     'authentication',
     'schedulingservices',
+    'intelligence',
     
     # Apps de terceiros
 ]
