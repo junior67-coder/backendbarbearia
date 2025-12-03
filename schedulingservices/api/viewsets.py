@@ -1,8 +1,10 @@
 from rest_framework import viewsets, permissions
 from authentication.models import BarberShop
 from schedulingservices.models import Professional, Service, Client, Scheduling
-
 from .serializers import ProfessionalSerializer, ServiceSerializer, ClientSerializer, SchedulingSerializer
+from schedulingservices.models import Client, Professional, Scheduling, Service
+
+from .serializers import ClientSerializer, ProfessionalSerializer, SchedulingSerializer, ServiceSerializer
 
 from django.shortcuts import get_object_or_404
 
@@ -40,19 +42,27 @@ class ServiceViewSet(MultiTenantModelViewSet):
         
         # 2. Lógica para filtrar o ManyToMany (profissionais_aptos) pelo Salão
         # Se o serializer tem dados de 'profissionais_aptos', garantimos que eles pertencem ao Salão
-        if 'profissionals_aptos' in self.request.data:
-            profissionals_ids = self.request.data['profissionals_aptos']
+        if 'professionals_aptos' in self.request.data:
+            professionals_ids = self.request.data['professionals_aptos']
             # Filtra os IDs fornecidos para garantir que pertencem ao salão atual
+<<<<<<< HEAD
             profissionals_of_barbershop = Professional.objects.filter(barbershop__owner=self.request.user, id__in=profissionals_ids)
             serializer.instance.profissionals_aptos.set(profissionals_of_barbershop)
             
 
+=======
+            professionals_of_barbershop = Professional.objects.filter(barbershop__owner=self.request.user, id__in=professionals_ids)
+            serializer.instance.professionals_aptos.set(professionals_of_barbershop)
+            
+            
+>>>>>>> 3d377d16b328d317d7142638074db5e3b8bca742
 class ClientViewSet(MultiTenantModelViewSet):
     """Permite listar, criar, atualizar e deletar Clientes, filtrado pelo Salão logado."""
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
 
 
+<<<<<<< HEAD
 class SchedulingViewSet(MultiTenantModelViewSet):
     """Permite listar e criar Agendamentos, com verificação de conflito."""
     queryset = Scheduling.objects.all().order_by('date_hour_init')
@@ -63,3 +73,19 @@ class SchedulingViewSet(MultiTenantModelViewSet):
         barbershop = get_object_or_404(BarberShop, owner=self.request.user)
         serializer.save(barbershop=barbershop) 
         
+=======
+# --- Novo ViewSet: Agendamento ---
+class ShedulingViewSet(MultiTenantModelViewSet):
+    """Permite listar e criar Agendamentos, com verificação de conflito."""
+    queryset = Scheduling.objects.all().order_by('date_hour_init') # Ordenação padrão
+    serializer_class = SchedulingSerializer
+    
+    # Sobrescreve perform_create para injetar o Salão, tal como no MultiTenantModelViewSet
+    def perform_create(self, serializer):
+        # 1. Obter a instância do Salão
+        barbershop = get_object_or_404(BarberShop, owner=self.request.user)
+        
+        # 2. Injetar o Salão e salvar a instância
+        # Nota: O data_hora_fim já está em validated_data, graças ao método validate do serializer
+        serializer.save(barbershop=barbershop)
+>>>>>>> 3d377d16b328d317d7142638074db5e3b8bca742
