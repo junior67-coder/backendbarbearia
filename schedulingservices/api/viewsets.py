@@ -1,8 +1,8 @@
 from rest_framework import viewsets, permissions
 from authentication.models import BarberShop
-from schedulingservices.models import Professional, Service
+from schedulingservices.models import Professional, Service, Client, Scheduling
 
-from .serializers import ProfessionalSerializer, ServiceSerializer
+from .serializers import ProfessionalSerializer, ServiceSerializer, ClientSerializer, SchedulingSerializer
 
 from django.shortcuts import get_object_or_404
 
@@ -46,3 +46,20 @@ class ServiceViewSet(MultiTenantModelViewSet):
             profissionals_of_barbershop = Professional.objects.filter(barbershop__owner=self.request.user, id__in=profissionals_ids)
             serializer.instance.profissionals_aptos.set(profissionals_of_barbershop)
             
+
+class ClientViewSet(MultiTenantModelViewSet):
+    """Permite listar, criar, atualizar e deletar Clientes, filtrado pelo Salão logado."""
+    queryset = Client.objects.all()
+    serializer_class = ClientSerializer
+
+
+class SchedulingViewSet(MultiTenantModelViewSet):
+    """Permite listar e criar Agendamentos, com verificação de conflito."""
+    queryset = Scheduling.objects.all().order_by('date_hour_init')
+    serializer_class = SchedulingSerializer
+
+    # Sobrescreve perform_create para injetar o Salão, tal como no MultiTenantModelViewSet
+    def perform_create(self, serializer):
+        barbershop = get_object_or_404(BarberShop, owner=self.request.user)
+        serializer.save(barbershop=barbershop) 
+        
